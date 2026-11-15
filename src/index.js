@@ -1,5 +1,5 @@
-// Actual PreOink Cinematic Edition remains in a PRIVATE R2 bucket.
-// This Worker serves no game bytes until D1 username/password auth succeeds.
+// Actual PreOink game assets must be delivered only after D1 session authentication.
+// Supports authenticated Worker Static Assets (free tier), with legacy R2 fallback.
 const te=new TextEncoder();
 const MIME={html:"text/html; charset=utf-8",js:"application/javascript; charset=utf-8",css:"text/css; charset=utf-8",json:"application/json; charset=utf-8",svg:"image/svg+xml",webp:"image/webp",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",gif:"image/gif",mp3:"audio/mpeg",ogg:"audio/ogg",wav:"audio/wav",ttf:"font/ttf",woff:"font/woff",woff2:"font/woff2"};
 const COOKIE="preoink_session",SESSION_SECONDS=3600*3,ITER=210000;
@@ -81,11 +81,21 @@ export default {async fetch(request,env){
   if(path==="/api/me"&&request.method==="GET")return json({email:user.email,role:user.role});
   if(path.startsWith("/api/"))return json({error:"Not found"},404);
   if(request.method!=="GET"&&request.method!=="HEAD")return text("Method not allowed",405);
-  if(!env.GAME_FILES)return text("Private game storage not configured",503);
   const key=secureName(path);if(!key)return text("Not found",404);
-  const obj=await env.GAME_FILES.get(key);if(!obj)return text("Game file not found",404);
   const ext=key.split(".").pop().toLowerCase();
   const headers=new Headers({"content-type":MIME[ext]||"application/octet-stream","cache-control":"private, no-store","x-content-type-options":"nosniff","referrer-policy":"no-referrer","x-frame-options":"DENY"});
   if(ext==="html")headers.set("content-security-policy","default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' blob: data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'");
+  if(env.ASSETS){
+    // run_worker_first MUST be true for ALL asset paths in Wrangler config.
+    // Never return an asset before the D1 session check above.
+    const assetURL=new URL("/"+key,request.url);
+    const asset=await env.ASSETS.fetch(new Request(assetURL,{method:request.method,headers:request.headers}));
+    if(!asset.ok)return text("Game file not found",404);
+    const safeHeaders=new Headers(asset.headers);
+    for(const [k,v] of headers)safeHeaders.set(k,v);
+    return new Response(request.method==="HEAD"?null:asset.body,{status:asset.status,headers:safeHeaders});
+  }
+  if(!env.GAME_FILES)return text("Private game storage not configured",503);
+  const obj=await env.GAME_FILES.get(key);if(!obj)return text("Game file not found",404);
   return new Response(request.method==="HEAD"?null:obj.body,{status:200,headers});
 }};
