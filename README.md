@@ -32,3 +32,15 @@ See [deployment instructions](docs/DEPLOY_PRIVATE_PLAYTEST.md) before deploying.
 ## Policy
 
 Keep the game source and assets PRIVATE. Do not add `public/game`, `preoink/dist`, `owner-seed.sql`, passwords, database IDs containing secrets, or service tokens to this repo. No paid infrastructure without owner approval.
+
+## PreOink cross-repository update — November 15, 2026
+
+**Canonical current game source:** [private PreOink Cinematic Edition](https://github.com/markallanfigueroa-svg/-PreOink-Cinematic-Edition-/tree/main/preoink/dist). Do not treat older Chapter One deployments or this repository as automatically synchronized with that build.
+
+**Actual updated game package:** [successful GitHub Actions package run #2](https://github.com/markallanfigueroa-svg/-PreOink-Cinematic-Edition-/actions/runs/43760444103) (private login required). The downloadable artifact is a local game bundle, **not a hosted iPhone URL**.
+
+**Existing Chapter One website:** https://preoink-chapter-one-playtest.markallanfigueroa.chatgpt.site — older live build; not confirmed to include latest Cinematic Edition updates. Do not label it updated without verifying its build ID against current `preoink/dist/index.html`.
+
+**New password-gated website:** [preoink-new-website](https://github.com/markallanfigueroa-svg/preoink-new-website) — deployment blocked by nonexistent Cloudflare R2 bucket; free Worker Static Assets migration is still pending. Never publish private game files in the public website repository or bypass authentication.
+
+**Update rule:** A source commit or a passing package workflow does not deploy any website. Only call a game **live and updated** after a successful deployment and actual browser verification of the latest build and assets. Keep the approved PreOink canon and character artwork intact; never replace the real game with a placeholder prototype.
