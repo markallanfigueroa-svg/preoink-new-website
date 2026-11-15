@@ -1,0 +1,37 @@
+name: PreOink secure website checks (no deployment)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'tools/**'
+      - 'package.json'
+      - 'wrangler.toml'
+      - '.github/workflows/secure-site-checks.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate worker, owner bootstrap, and authorization tests
+        run: npm run check
+      - name: Verify configured D1 database identifier
+        run: node tools/check-deploy-config.mjs
+      - name: Confirm no public game asset bundle is committed
+        shell: bash
+        run: |
+          if [ -d preoink/dist ] || [ -d public/game ] || [ -d game-assets ]; then
+            echo "STOP: Game assets must remain in the private game repository, never this public gateway."
+            exit 1
+          fi
+          echo "No known public game asset bundle found."
+      - name: Explain release status
+        run: echo "Checks only. No deployment, R2 activation, paid service, or game publishing occurs."
