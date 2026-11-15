@@ -26,6 +26,13 @@ const adminHtml=()=>page("PreOink Tester Admin",`<h1>Tester administration</h1><
 export default {async fetch(request,env){
   const path=new URL(request.url).pathname;
   if(!env.DB)return text("Auth database not configured",503);
+  // Visiting the public site root always begins a fresh sign-in, even when
+  // a previous three-hour browser session is still present.
+  if(request.method==="GET"&&path==="/"){
+    const old=getCookie(request);
+    if(old){await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?").bind(await digest(old)).run();}
+    return new Response(null,{status:303,headers:{"location":"/login","cache-control":"no-store","set-cookie":cookieHeader("",true)}});
+  }
   if(request.method==="GET"&&path==="/login")return loginHtml();
   if(request.method==="POST"&&path==="/api/login"){
     const body=await post(request);if(!body||typeof body.email!=="string"||typeof body.password!=="string")return json({error:"Invalid request"},400);
