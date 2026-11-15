@@ -23,7 +23,7 @@ The website address may be publicly reachable but the real PreOink game HTML, Ja
 5. Create the owner account on a trusted computer with `node tools/bootstrap-owner.mjs OWNER_EMAIL > owner-seed.sql`. **Do not put passwords in command arguments.** Use a strong unique password. Then run `npx wrangler d1 execute preoink-auth --remote --file=owner-seed.sql` and delete `owner-seed.sql`. Verify the admin row in D1.
 6. Export approved `preoink/dist` game files from the private `-PreOink-Cinematic-Edition-` GitHub repository and upload all files to the R2 bucket as keys relative to the dist root: `index.html`, `story.js`, fonts, art, sounds, etc. **Do not upload files into a public site or repository.**
 7. Inspect the actual game's asset references, confirm relative URLs and required external origins; adjust CSP only as needed. Verify `/play` serves the actual game rather than a mockup.
-8. Deploy from a trusted terminal via `npx wrangler deploy`. Link the intended Cloudflare Worker public URL/domain.
+8. Deploy using `npm run deploy` (not a bare `npx wrangler deploy`). The guarded command checks that the real D1 UUID is configured and runs the gateway tests before invoking Wrangler. If using Cloudflare's Git-connected deployment screen, change the **Deploy command** from its default `npx wrangler deploy` to **`npm run deploy`**. Link the intended Cloudflare Worker public URL/domain.
 9. In Safari and desktop browser verify: anonymous login screen; invalid password denied; authorized owner can play; invite tester from `/admin`; tester access works; revoked tester denied; no direct file URL works without session; all images/audio load; save and mobile orientation work.
 10. Only distribute the URL after those checks actually pass.
 
@@ -42,3 +42,13 @@ The public `preoink-new-website` repository intentionally contains **no game ass
 - Verify the deployed private domain and final iPhone Safari functionality.
 
 Do not call the public repo itself a private deployment. Do not put game files under GitHub Pages.
+
+## Cloudflare dashboard setup — iPhone walkthrough
+
+- The database named `preoink-auth` has been created in the owner's Cloudflare account. **Do not create another database.** In **Storage & databases → D1 → preoink-auth**, the database UUID may be shown in the database overview or in the browser URL, not necessarily under Settings. If it is not visible, use `npx wrangler d1 list` from an authenticated computer. Do not guess the UUID.
+- Add the real UUID to `wrangler.toml` under `database_id`. This is a resource identifier, **not a password**. Do not paste Cloudflare API tokens or account credentials into GitHub source.
+- Create **R2 → preoink-private-game** and keep all public access options disabled. R2 may require a billing method even when usage is within free allowances; review pricing and ask before enabling a paid feature.
+- Apply the D1 migrations and seed the owner through the trusted manual bootstrap instructions above. A database with zero tables cannot authenticate anybody.
+- On **Workers & Pages → Create application → Connect GitHub**, choose only the public `preoink-new-website` repository. Set **Build command** blank and **Deploy command** to `npm run deploy`. A deployment attempted before configuration will intentionally fail instead of publishing a misleading login page.
+- The private game repo's separate manual publishing workflow needs Cloudflare credentials stored as GitHub Actions **secrets** and an R2 bucket. It does **not** run automatically on every game commit. The website deployment alone will not update game assets.
+- Do not report the site as live/playable until the owner can sign in and verify actual gameplay, art, audio, save, and mobile controls.
