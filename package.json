@@ -6,6 +6,6 @@
     "test": "node --test tests/security.test.mjs",
     "check": "node --check src/index.js && node --check tools/bootstrap-owner.mjs && npm test",
     "predeploy": "node tools/check-deploy-config.mjs && npm run check",
-    "deploy": "npm run predeploy && wrangler deploy"
+    "deploy": "npx --yes wrangler@4 deploy"
   }
 }
