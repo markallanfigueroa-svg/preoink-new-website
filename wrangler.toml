@@ -1,0 +1,15 @@
+name = "preoink-secure-playtest"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Configure a private R2 bucket via Cloudflare dashboard first.
+# Keep the bucket private: no public custom domain or r2.dev URL.
+[[r2_buckets]]
+binding = "GAME_FILES"
+bucket_name = "preoink-private-game"
+
+[vars]
+# Set Access application AUD via Cloudflare dashboard before deployment.
+# ACCESS_TEAM_DOMAIN should be e.g. https://example.cloudflareaccess.com
+ACCESS_TEAM_DOMAIN = "REPLACE_WITH_ACCESS_TEAM_DOMAIN"
+ACCESS_AUD = "REPLACE_WITH_ACCESS_APPLICATION_AUD"
