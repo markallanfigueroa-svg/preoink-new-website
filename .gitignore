@@ -1,0 +1,14 @@
+# Do not commit private data or game assets to this PUBLIC repository
+node_modules/
+.wrangler/
+.dev.vars
+.env
+.env.*
+owner-seed.sql
+**/owner-seed.sql
+preoink/
+public/game/
+dist/
+*.zip
+*.sqlite
+*.db
