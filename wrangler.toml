@@ -10,6 +10,5 @@ bucket_name = "preoink-private-game"
 [[d1_databases]]
 binding = "DB"
 database_name = "preoink-auth"
-# REQUIRED: replace with the real D1 UUID from wrangler d1 create preoink-auth.
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "6246b665-5a31-4692-80d0-2e74f4948fc3"
 migrations_dir = "migrations"
