@@ -1,1 +1,10 @@
-{"name":"preoink-private-playtest-gateway","private":true,"type":"module","scripts":{"test":"node --test tests/security.test.mjs","check":"node --check src/index.js && node --check tools/bootstrap-owner.mjs && npm test"}}
+{
+  "name": "preoink-private-playtest-gateway",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/security.test.mjs",
+    "check": "node --check src/index.js && node --check tools/bootstrap-owner.mjs && npm test",
+    "predeploy": "node tools/check-deploy-config.mjs && npm run check"
+  }
+}
