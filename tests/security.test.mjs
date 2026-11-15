@@ -76,3 +76,23 @@ test("login and administration writes reject cross-origin requests",async()=>{
  const noOrigin=new Request(uri+"/api/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:"owner@example.com",password:"OwnerSecretPassword2026!"})});
  assert.equal((await worker.fetch(noOrigin,e)).status,400);
 });
+
+test("Worker Static Assets are inaccessible anonymously and only fetched after login",async()=>{
+ const e=env();delete e.GAME_FILES;
+ const requested=[];
+ e.ASSETS={async fetch(req){requested.push(new URL(req.url).pathname);const pathname=new URL(req.url).pathname;return new Response(pathname==="/index.html"?"<h1>Actual private Cinematic Edition</h1>":"private-bytes",{status:200,headers:{"content-type":"text/plain","cache-control":"public,max-age=999"}})}};
+ for(const p of ["/play","/story.js","/game/straw.webp","/fonts/bungee-regular.ttf"]){
+   const r=await worker.fetch(make(p),e);
+   assert.ok(r.status===401||r.status===303,p);
+ }
+ assert.deepEqual(requested,[],"anonymous requests must never reach static asset binding");
+ await addOwner(e);const cookie=token(await login(e));
+ const play=await worker.fetch(make("/play","GET",null,{cookie}),e);
+ assert.equal(play.status,200);
+ assert.match(await play.text(),/Actual private Cinematic Edition/);
+ assert.equal(play.headers.get("cache-control"),"private, no-store");
+ const font=await worker.fetch(make("/fonts/bungee-regular.ttf","GET",null,{cookie}),e);
+ assert.equal(font.status,200);
+ assert.equal(font.headers.get("content-type"),"font/ttf");
+ assert.deepEqual(requested,["/index.html","/fonts/bungee-regular.ttf"]);
+});
