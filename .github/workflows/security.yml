@@ -14,6 +14,17 @@ jobs:
           node-version: '22'
       - name: Validate gateway JavaScript
         run: npm run check
+      - name: Verify incomplete Cloudflare configuration cannot deploy
+        run: |
+          if grep -q 'REPLACE_WITH_D1_DATABASE_ID' wrangler.toml; then
+            if node tools/check-deploy-config.mjs; then
+              echo 'ERROR: deployment guard accepted placeholder D1 ID'
+              exit 1
+            fi
+            echo 'PASS: deployment guard rejects unconfigured D1 database'
+          else
+            node tools/check-deploy-config.mjs
+          fi
       - name: Ensure public repository has no actual game assets
         run: |
           test ! -d public/game
