@@ -1,0 +1,21 @@
+name: Private playtest gateway checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate gateway JavaScript
+        run: npm run check
+      - name: Ensure public repository has no actual game assets
+        run: |
+          test ! -d public/game
+          test ! -d preoink/dist
+          test ! -f owner-seed.sql
